@@ -2,6 +2,7 @@ const Question = require('../models/question')
 
 module.exports = {
   addQuestion: (req, res) => {
+    console.log('kiriman dari client ==>',req.body)
     const { 
       title, 
       question,
@@ -24,6 +25,7 @@ module.exports = {
           message: "Add question success",
           result
         })
+        console.log('berhasil add question')
       })
       .catch((err) => {
         res.status(500).json({
@@ -35,6 +37,7 @@ module.exports = {
   getAllQuestion: (req, res) => {
     Question
       .find({})
+      .populate('user')
       .then((result) => {
         res.status(200).json({
           message: "Get all question success",
@@ -49,14 +52,14 @@ module.exports = {
   },
 
   updateDownVote: (req, res) => {
-    const { downVote } = req.body
+    const { userId } = req.body
     const { questionid } = req.headers
 
     Question
       .findById({ _id: questionid })
       .then((result) => {
         console.log()
-        if (result.downVote.includes(downVote)) {
+        if (result.downVote.includes(userId)) {
           res.status(403).json({
             message: 'Tidak bisa down vote lagi cuyy'
           })
@@ -67,7 +70,7 @@ module.exports = {
                 _id: questionid 
               },
               { 
-                $push: { downVote: downVote }
+                $push: { downVote: userId }
               }
             )
             .then((result) => {
@@ -89,13 +92,15 @@ module.exports = {
   },
 
   updateUpVote: (req, res) => {
-    const { upVote } = req.body
+    const { userId } = req.body
     const { questionid } = req.headers
 
+    console.log('ini req headers =>', req.headers)
+    console.log('ini req body', req.body)
     Question
       .findById({ _id: questionid })
       .then((result) => {
-        if (result.upVote.includes(upVote)) {
+        if (result.upVote.includes(userId)) {
           res.status(403).json({
             message: 'Tidak bisa up vote lagi cuyy'
           })
@@ -106,7 +111,7 @@ module.exports = {
                 _id: questionid 
               },
               { 
-                $push: { upVote: upVote }
+                $push: { upVote: userId }
               }
             )
             .then((result) => {
@@ -133,29 +138,30 @@ module.exports = {
     const userId = req.user
 
     Question
-      .findOne({ user: userId })
+      .findOneAndUpdate(
+        { 
+          $and: [
+            {
+              _id: questionId, 
+            }, 
+            {
+              user: userId 
+            }
+          ]
+        },
+        {
+          $set: {
+            title: title,
+            question: question
+          }
+        }
+      )
       .then((result) => {
         if (result) {
-          Question
-            .findOneAndUpdate({ 
-              _id: questionId, 
-            }, {
-              $set: {
-                title: title,
-                question: question
-              }
-            })
-            .then((result) => {
-              res.status(201).json({
-                message: "Update question success",
-                result
-              })
-            })
-            .catch((err) => {
-              res.status(500).json({
-                messageErr: err.message
-              })
-            })
+          res.status(201).json({
+            message: "Update question success",
+            result
+          })
         } else {
           res.status(401).json({
             message: "Authorization failed"
@@ -164,7 +170,7 @@ module.exports = {
       })
       .catch((err) => {
         res.status(500).json({
-          message: err
+          messageErr: err.message
         })
       })
   },

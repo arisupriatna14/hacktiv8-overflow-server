@@ -13,7 +13,8 @@ const userSchema = mongoose.Schema({
   },
   password: {
     type: String,
-    require: true
+    require: true,
+    default: 'hacktiv8overflow112233'
   },
   imageUrl: {
     type: String

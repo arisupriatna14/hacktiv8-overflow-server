@@ -4,8 +4,9 @@ const jwt = require('jsonwebtoken');
 module.exports = {
   auth: (req, res, next) => {
     const { authorization } = req.headers
-    const token = authorization.split('Bearer ')[1]
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY)
+    console.log('req header =>', req.headers)
+    const decoded = jwt.verify(authorization, process.env.JWT_SECRET_KEY)
+    console.log('masuk then ==>', decoded)
     
     User
       .findById({ _id: decoded.id })
