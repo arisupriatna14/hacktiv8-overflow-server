@@ -7,10 +7,10 @@ const nodemailer = require('nodemailer')
 module.exports = {
   register: (req, res) => {
     console.log(req.body)
-    const { username, email,  imageUrl } = req.body
+    const { username, email,  imageUrl, password } = req.body
 
     User
-      .create({ username, email,  imageUrl })
+      .create({ username, email,  imageUrl, password })
       .then(result => {
 
         let transporter = nodemailer.createTransport({
@@ -56,7 +56,6 @@ module.exports = {
     User
       .findOne({ email: email })
       .then(result => {
-        console.log(result)
         const passwordFromDB = result.password
         bcrypt
           .compare(password, passwordFromDB)
